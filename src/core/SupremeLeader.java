@@ -10,7 +10,7 @@ import java.util.TimerTask;
  * A very simple leader implementation that only generates random prices
  * @author Group 19
  */
-final class SimpleLeader
+final class SupremeLeader
 	extends PlayerImpl
 {
 	/* The randomizer used to generate random price */
