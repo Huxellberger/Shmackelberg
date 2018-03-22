@@ -9,7 +9,7 @@ public final class StackelbergAgent
     {
 	try
 	{
-	    new SimpleLeader();
+	    new SupremeLeader();
 	}
 	catch(RemoteException | NotBoundException e)
 	{
