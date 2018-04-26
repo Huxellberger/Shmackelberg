@@ -2,24 +2,29 @@ package StackelbergAgent;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * A very simple leader implementation that only generates random prices
+ * Moving Window approach to leader-follower imperfect information game
  * @author Group 19
  */
 final class SupremeLeader
 	extends PlayerImpl
 {
-	/* The randomizer used to generate random price */
-	private final Random m_randomizer = new Random(System.currentTimeMillis());
+        private static final int WINDOW_SIZE = 30;
+        private static final float FORGETTING_FACTOR = 0.95f;
+
+        private static final float UNIT_COST = 1.0f;
+        
+
+        private Record[] m_records;
 
 	public SupremeLeader()
 		throws RemoteException, NotBoundException
 	{
 		super(PlayerType.LEADER, "Supreme Leader");
+		m_records = new Record[WINDOW_SIZE];	
 	}
 
 	@Override
@@ -38,20 +43,54 @@ final class SupremeLeader
 	public void proceedNewDay(int p_date)
 		throws RemoteException
 	{
-		m_platformStub.publishPrice(m_type, genPrice(1.8f, 0.05f));
+		m_platformStub.publishPrice(m_type, genPrice(p_date));
 	}
 
 	/**
-	 * Generate a random price based Gaussian distribution. The mean is p_mean,
-	 * and the diversity is p_diversity
-	 * @param p_mean The mean of the Gaussian distribution
-	 * @param p_diversity The diversity of the Gaussian distribution
+	 * Generate a price using the moving window approach
+	 * 
+	 * @param the new day to simulate
 	 * @return The generated price
 	 */
-	private float genPrice(final float p_mean, final float p_diversity)
+	private float genPrice(final int currentDay)
 	{
-		return (float) (p_mean + m_randomizer.nextGaussian() * p_diversity);
+	    updatePriorRecords(currentDay);
+	    return (float) currentDay;
 	}
+
+        private void updatePriorRecords(final int currentDay)
+        {
+	    int iteratedDay = currentDay;
+
+	    for (int i = WINDOW_SIZE - 1; i >= 0; i--)
+	    {
+		m_records[i] = getRecordForDay(iteratedDay);
+		iteratedDay--;
+	    }
+        }
+
+        private Record getRecordForDay(int queryDate)
+        {
+	    try
+	    {
+		 return m_platformStub.query(m_type, queryDate);
+	    }
+	    catch(RemoteException e)
+	    {
+		e.printStackTrace();
+		return null;
+	    }
+	}
+
+        private float getDailyProfit(final float leaderPrice, final float followerPrice)
+        {
+	    return (leaderPrice - UNIT_COST) * getDemandModelResult(leaderPrice, followerPrice);
+        }
+
+        private float getDemandModelResult(final float leaderPrice, final float followerPrice)
+        {
+	    return 2 - leaderPrice + (0.3f * followerPrice);
+        }
 
 	/**
 	 * The task used to automatically exit the leader process
