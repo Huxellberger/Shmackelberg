@@ -16,7 +16,6 @@ final class SupremeLeader
         private static final float FORGETTING_FACTOR = 0.95f;
 
         private static final float UNIT_COST = 1.0f;
-        
 
         private Record[] m_records;
 
@@ -55,12 +54,15 @@ final class SupremeLeader
 	private float genPrice(final int currentDay)
 	{
 	    updatePriorRecords(currentDay);
-	    return (float) currentDay;
+	    RegressionData data = getDataForPreviousDays();
+	    float a = getA(data);
+	    float b = getB(data);
+	    return getOptimalLeaderCost(a, b);
 	}
 
         private void updatePriorRecords(final int currentDay)
         {
-	    int iteratedDay = currentDay;
+	    int iteratedDay = currentDay - 1;
 
 	    for (int i = WINDOW_SIZE - 1; i >= 0; i--)
 	    {
@@ -81,6 +83,46 @@ final class SupremeLeader
 		return null;
 	    }
 	}
+
+       private RegressionData getDataForPreviousDays()
+       {
+	    float sumLeaderSquared = 0.0f;
+	    float sumFollower = 0.0f;
+	    float sumLeader = 0.0f;
+	    float sumLeaderFollowerProduct = 0.0f;
+	    
+	    int scalingFactorIndex = WINDOW_SIZE - 1;
+	    for (Record record : m_records)
+	    {
+		float currentScalingFactor = scalingFactorIndex * (float)Math.pow(FORGETTING_FACTOR, scalingFactorIndex);
+
+		sumLeaderSquared += record.m_leaderPrice * record.m_leaderPrice * currentScalingFactor;
+		sumFollower += record.m_followerPrice * currentScalingFactor;
+		sumLeader += record.m_leaderPrice * currentScalingFactor;
+		sumLeaderFollowerProduct += record.m_leaderPrice * record.m_followerPrice * currentScalingFactor;
+
+		scalingFactorIndex--;
+	    }
+
+	    return new RegressionData(sumLeader, sumLeaderSquared, sumFollower, sumLeaderFollowerProduct);
+       }
+
+        private float getA(RegressionData inData)
+        {
+	    return ((inData.sumLeaderSquared * inData.sumFollower) - (inData.sumLeader * inData.sumLeaderFollowerProduct)) / 
+		((WINDOW_SIZE * inData.sumLeaderSquared) - (inData.sumLeader * inData.sumLeader));
+        }
+
+        private float getB(RegressionData inData)
+        {
+	    return ((WINDOW_SIZE * inData.sumLeaderFollowerProduct) - (inData.sumLeader * inData.sumFollower)) / 
+		((WINDOW_SIZE * inData.sumLeaderSquared) - (inData.sumLeader * inData.sumLeader));
+        }
+
+        private float getOptimalLeaderCost(final float a, final float b)
+        {
+	    return (2 - UNIT_COST + (0.3f * a)) / (2 - (0.3f * b));
+        }
 
         private float getDailyProfit(final float leaderPrice, final float followerPrice)
         {
