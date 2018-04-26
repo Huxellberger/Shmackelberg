@@ -28,7 +28,7 @@
 	     basedir="${core.build.dir}"
 	     includes="**/*.class">
             <manifest>
-                <attribute name="Main-Class" value="${ant.project.name}.${ant.project.name}"/>
+                <attribute name="Main-Class" value="${ant.project.name}.Main"/>
             </manifest>
         </jar>
     </target>

@@ -3,7 +3,7 @@ package StackelbergAgent;
 import java.rmi.RemoteException;
 import java.rmi.NotBoundException;
 
-public final class StackelbergAgent
+public final class Main
 {
     public static void main(String[] args)
     {
