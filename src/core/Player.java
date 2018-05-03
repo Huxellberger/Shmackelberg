@@ -1,5 +1,6 @@
-package StackelbergAgent;
+// package StackelbergAgent;
 
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 /**
@@ -7,6 +8,7 @@ import java.rmi.RemoteException;
  * @author Xin
  */
 public interface Player
+	extends Remote
 {
 	public void checkConnection()
 		throws RemoteException;

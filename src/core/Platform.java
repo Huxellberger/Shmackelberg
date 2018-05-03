@@ -1,4 +1,4 @@
-package StackelbergAgent;
+// package StackelbergAgent;
 
 import java.rmi.NotBoundException;
 import java.rmi.Remote;

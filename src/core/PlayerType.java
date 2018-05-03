@@ -1,4 +1,4 @@
-package StackelbergAgent;
+// package StackelbergAgent;
 
 /**
  * The types of the players

@@ -1,7 +1,6 @@
-package StackelbergAgent;
+// package StackelbergAgent;
 
 import java.rmi.NotBoundException;
-import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -12,7 +11,7 @@ import java.rmi.server.UnicastRemoteObject;
  * @author Xin
  */
 public abstract class PlayerImpl
-	implements Player, Remote
+	implements Player
 {
 	/* The stub of the platform */
 	protected Platform m_platformStub;
@@ -35,7 +34,7 @@ public abstract class PlayerImpl
 	private void registerRMI()
 		throws RemoteException
 	{
-		final Remote l_playerStub = UnicastRemoteObject.exportObject(this, 0);
+		final Player l_playerStub = (Player)UnicastRemoteObject.exportObject(this, 0);
 		final Registry l_registry = LocateRegistry.getRegistry();
 		l_registry.rebind(m_type.toString(), l_playerStub);
 	}

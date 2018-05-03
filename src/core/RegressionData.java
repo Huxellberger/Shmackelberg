@@ -1,4 +1,4 @@
-package StackelbergAgent;
+// package StackelbergAgent;
 
 public final class RegressionData
 {

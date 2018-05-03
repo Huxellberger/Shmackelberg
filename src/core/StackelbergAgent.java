@@ -1,15 +1,15 @@
-package StackelbergAgent;
+// package StackelbergAgent;
 
 import java.rmi.RemoteException;
 import java.rmi.NotBoundException;
 
-public final class Main
+public final class StackelbergAgent
 {
     public static void main(String[] args)
     {
 	try
 	{
-	    new SupremeLeader();
+	    new SimpleLeader();
 	}
 	catch(RemoteException | NotBoundException e)
 	{
