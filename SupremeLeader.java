@@ -25,8 +25,8 @@ final class SupremeLeader
 	    }	
 	}
 
-        private static final int WINDOW_SIZE = 30;
-        private static final float FORGETTING_FACTOR = 0.95f;
+        private static final int WINDOW_SIZE = 100;
+        private static final float FORGETTING_FACTOR = 0.99f;
 
         private static final float UNIT_COST = 1.0f;
 
@@ -104,17 +104,18 @@ final class SupremeLeader
 	    float sumLeader = 0.0f;
 	    float sumLeaderFollowerProduct = 0.0f;
 	    
-	    int scalingFactorIndex = WINDOW_SIZE - 1;
+	    int scalingFactorIndex = 1;
 	    for (Record record : m_records)
 	    {
-		float currentScalingFactor = scalingFactorIndex * (float)Math.pow(FORGETTING_FACTOR, scalingFactorIndex);
+		float currentScalingFactor = scalingFactorIndex * (float)Math.pow(FORGETTING_FACTOR, (scalingFactorIndex - 1));
+		// float currentScalingFactor = 1.0f;
 
 		sumLeaderSquared += record.m_leaderPrice * record.m_leaderPrice * currentScalingFactor;
 		sumFollower += record.m_followerPrice * currentScalingFactor;
 		sumLeader += record.m_leaderPrice * currentScalingFactor;
 		sumLeaderFollowerProduct += record.m_leaderPrice * record.m_followerPrice * currentScalingFactor;
 
-		scalingFactorIndex--;
+		scalingFactorIndex++;
 	    }
 
 	    return new RegressionData(sumLeader, sumLeaderSquared, sumFollower, sumLeaderFollowerProduct);
