@@ -1,5 +1,3 @@
-// package StackelbergAgent;
-
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.Timer;

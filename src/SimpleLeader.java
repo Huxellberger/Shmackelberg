@@ -1,5 +1,5 @@
-// package StackelbergAgent;
-
+import comp34120.ex2.PlayerImpl;
+import comp34120.ex2.PlayerType;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.Random;
@@ -16,7 +16,7 @@ final class SimpleLeader
 	/* The randomizer used to generate random price */
 	private final Random m_randomizer = new Random(System.currentTimeMillis());
 
-	public SimpleLeader()
+	private SimpleLeader()
 		throws RemoteException, NotBoundException
 	{
 		super(PlayerType.LEADER, "Simple Leader");
@@ -51,6 +51,12 @@ final class SimpleLeader
 	private float genPrice(final float p_mean, final float p_diversity)
 	{
 		return (float) (p_mean + m_randomizer.nextGaussian() * p_diversity);
+	}
+
+	public static void main(final String[] p_args)
+		throws RemoteException, NotBoundException
+	{
+		new SimpleLeader();
 	}
 
 	/**
