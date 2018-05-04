@@ -16,27 +16,37 @@ final class SupremeLeader
 	public static void main(String[] args)
 	{
 	    try
-	    {
-	    	new SupremeLeader();
+	    { 
+		if (args.length != 2)
+		{
+		    System.out.println("Wrong input arguments! Please submit window size and forgetting factor state");
+		    return;
+		}
+	
+	    	new SupremeLeader(Integer.parseInt(args[0]), Boolean.parseBoolean(args[1]));
 	    }
 	    catch(RemoteException | NotBoundException e)
 	    {
 	    	System.out.println("Couldn't even start " + e);
 	    }	
-	}
+	}    
 
-        private static final int WINDOW_SIZE = 100;
         private static final float FORGETTING_FACTOR = 0.99f;
-
-        private static final float UNIT_COST = 1.0f;
+        public static final float UNIT_COST = 1.0f;
 
         private Record[] m_records;
+        private int m_windowSize = 100;
+        private boolean m_shouldForget = false; 
 
-	public SupremeLeader()
+        public SupremeLeader(int inWindowSize, boolean inShouldForget)
 		throws RemoteException, NotBoundException
 	{
 		super(PlayerType.LEADER, "Supreme Leader");
-		m_records = new Record[WINDOW_SIZE];	
+
+		m_windowSize = inWindowSize;
+		m_shouldForget = inShouldForget;
+
+		m_records = new Record[m_windowSize];	
 	}
 
 	@Override
@@ -68,8 +78,8 @@ final class SupremeLeader
 	{
 	    updatePriorRecords(currentDay);
 	    RegressionData data = getDataForPreviousDays();
-	    float a = getA(data);
-	    float b = getB(data);
+	    float a = getA(data, m_windowSize);
+	    float b = getB(data, m_windowSize);
 	    return getOptimalLeaderCost(a, b);
 	}
 
@@ -77,7 +87,7 @@ final class SupremeLeader
         {
 	    int iteratedDay = currentDay - 1;
 
-	    for (int i = WINDOW_SIZE - 1; i >= 0; i--)
+	    for (int i = m_windowSize - 1; i >= 0; i--)
 	    {
 		m_records[i] = getRecordForDay(iteratedDay);
 		iteratedDay--;
@@ -107,8 +117,11 @@ final class SupremeLeader
 	    int scalingFactorIndex = 1;
 	    for (Record record : m_records)
 	    {
-		float currentScalingFactor = scalingFactorIndex * (float)Math.pow(FORGETTING_FACTOR, (scalingFactorIndex - 1));
-		// float currentScalingFactor = 1.0f;
+		float currentScalingFactor = 1.0f;
+		if (m_shouldForget)
+		{
+		    currentScalingFactor = scalingFactorIndex * (float)Math.pow(FORGETTING_FACTOR, (scalingFactorIndex - 1));
+		}	
 
 		sumLeaderSquared += record.m_leaderPrice * record.m_leaderPrice * currentScalingFactor;
 		sumFollower += record.m_followerPrice * currentScalingFactor;
@@ -121,19 +134,22 @@ final class SupremeLeader
 	    return new RegressionData(sumLeader, sumLeaderSquared, sumFollower, sumLeaderFollowerProduct);
        }
 
-        private float getA(RegressionData inData)
+        // Exposed for testing
+        public static float getA(RegressionData inData, int windowSize)
         {
 	    return ((inData.sumLeaderSquared * inData.sumFollower) - (inData.sumLeader * inData.sumLeaderFollowerProduct)) / 
-		((WINDOW_SIZE * inData.sumLeaderSquared) - (inData.sumLeader * inData.sumLeader));
+		((windowSize * inData.sumLeaderSquared) - (inData.sumLeader * inData.sumLeader));
         }
 
-        private float getB(RegressionData inData)
+        // Exposed for testing
+        public static float getB(RegressionData inData, int windowSize)
         {
-	    return ((WINDOW_SIZE * inData.sumLeaderFollowerProduct) - (inData.sumLeader * inData.sumFollower)) / 
-		((WINDOW_SIZE * inData.sumLeaderSquared) - (inData.sumLeader * inData.sumLeader));
+	    return ((windowSize * inData.sumLeaderFollowerProduct) - (inData.sumLeader * inData.sumFollower)) / 
+		((windowSize * inData.sumLeaderSquared) - (inData.sumLeader * inData.sumLeader));
         }
 
-        private float getOptimalLeaderCost(final float a, final float b)
+        // Exposed for testing
+        public static float getOptimalLeaderCost(final float a, final float b)
         {
 	    return (2 + UNIT_COST + (0.3f * a)) / (2 - (0.3f * b));
         }

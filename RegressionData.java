@@ -1,5 +1,3 @@
-// package StackelbergAgent;
-
 public final class RegressionData
 {
     public final float sumLeader;
